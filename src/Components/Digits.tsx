@@ -2,12 +2,12 @@
 import { append } from 'ramda';
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import Icon from './Assets/Icon';
-import Button from './Core/Button';
-import { COLORS } from './Core/Colors';
-import { FONTS } from './Core/Fonts';
-import { dimentions } from './Core/Metrics';
-import { Dinero, Money } from './Modules/Dinero';
+import Icon from '../Assets/Icon';
+import Button from '../Core/Button';
+import { COLORS } from '../Core/Colors';
+import { FONTS } from '../Core/Fonts';
+import { dimentions } from '../Core/Metrics';
+import { Dinero, Money } from '../Modules/Dinero';
 
 interface DigitsProps {
   onPress: (value: Money) => void;
@@ -134,7 +134,7 @@ const Digits = (props: DigitsProps) => {
 export default Digits;
 
 const styles = StyleSheet.create({
-  container: { justifyContent: 'center' },
+  container: { justifyContent: 'center', marginTop: 64 },
   numPadRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     width: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 90,
+    borderRadius: 45,
     backgroundColor: COLORS.vinylBlack,
   },
   titleText: {

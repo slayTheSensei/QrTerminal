@@ -5,7 +5,8 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Icon from './src/Assets/Icon';
 import { COLORS } from './src/Core/Colors';
-import Home from './src/home';
+import Home from './src/Components/home';
+import PayCode from './src/Components/PayCode';
 
 const Header = () => {
   return (
@@ -15,13 +16,18 @@ const Header = () => {
   );
 };
 
-const App = () => {
-  const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator();
 
+const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="Home" component={Home} options={ScreenOptions} />
+        <Stack.Screen
+          name="PayCode"
+          component={PayCode}
+          options={ScreenOptionsNoHeader}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -30,7 +36,7 @@ const App = () => {
 const styles = StyleSheet.create({
   header: {
     justifyContent: 'flex-end',
-    height: 150,
+    height: 125,
     backgroundColor: COLORS.skyGrey,
     borderBottomWidth: 0,
     alignItems: 'center',
@@ -40,6 +46,10 @@ const styles = StyleSheet.create({
 const ScreenOptions = {
   headerStyle: styles.header,
   header: Header,
+};
+const ScreenOptionsNoHeader = {
+  headerStyle: styles.header,
+  headerShown: false,
 };
 
 export default App;
