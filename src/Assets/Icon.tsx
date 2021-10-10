@@ -2,7 +2,7 @@ import * as React from 'react';
 import { StyleSheet, Image, ImageProps } from 'react-native';
 
 interface IconProps {
-  type: 'Back' | 'Dot' | 'DarkLogo';
+  type: 'Back' | 'Dot' | 'DarkLogo' | 'Close';
   style?: ImageProps | any;
 }
 
@@ -15,6 +15,7 @@ const Icon = (props: IconProps) => {
   const backIcon = require('./png/back.png');
   const dotIcon = require('./png/dot.png');
   const darkLogo = require('./png/logo.png');
+  const closeIcon = require('./png/close.png');
 
   switch (type) {
     case 'Back':
@@ -27,6 +28,10 @@ const Icon = (props: IconProps) => {
 
     case 'DarkLogo':
       uri = darkLogo;
+      break;
+
+    case 'Close':
+      uri = closeIcon;
       break;
   }
 
