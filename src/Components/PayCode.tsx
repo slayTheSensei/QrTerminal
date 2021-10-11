@@ -1,17 +1,41 @@
-import { useNavigation } from '@react-navigation/core';
+import {
+  NavigationProp,
+  RouteProp,
+  useNavigation,
+} from '@react-navigation/core';
 import * as React from 'react';
-import { View, StyleSheet, Text, Alert } from 'react-native';
+import { View, StyleSheet, Text, Alert, TouchableOpacity } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { RootStackParamList } from '../../App';
 import { COLORS } from '../Core/Colors';
 import { FONTS } from '../Core/Fonts';
 import Header from '../Core/Header';
 
-interface PayCodeProps {}
+const MOCK_PAYMENT = {
+  id: '1',
+  amount: 7500,
+  userId: 'a',
+  merchantId: 'b',
+  status: 1,
+};
+
+interface PayCodeProps {
+  route: RouteProp<RootStackParamList, 'PayCode'>;
+}
 
 const PayCode = (props: PayCodeProps) => {
-  const {} = props;
+  const amount = props.route.params.amount;
+  const [value, setValue] = React.useState('');
+  const navigation = useNavigation() as NavigationProp<any>;
 
-  const navigation = useNavigation();
+  const codeValue = `https://demo.vinylpay.com/?amount=${value}&venue=Demo-Greens`;
+
+  React.useEffect(() => {
+    const formatedAmount = amount.toFormat('0,0.00');
+
+    setValue(formatedAmount);
+  }, [amount]);
+
   return (
     <View style={styles.root}>
       <Header
@@ -33,13 +57,19 @@ const PayCode = (props: PayCodeProps) => {
       />
       <View style={styles.container}>
         <Text style={styles.label}>Order Total</Text>
-        <Text style={styles.balance}>{'$50.00'}</Text>
-        <QRCode
-          value="http://awesome.link.qr"
-          size={270}
-          enableLinearGradient
-          linearGradient={COLORS.vinylGradient}
-        />
+        <Text style={styles.balance}>{value}</Text>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('Completed', { payment: MOCK_PAYMENT })
+          }>
+          <QRCode
+            value={codeValue}
+            size={270}
+            backgroundColor="transparent"
+            enableLinearGradient
+            linearGradient={COLORS.vinylGradient}
+          />
+        </TouchableOpacity>
         <View style={styles.msgContainer}>
           <Text style={styles.msg}>{'Scan to pay'}</Text>
         </View>

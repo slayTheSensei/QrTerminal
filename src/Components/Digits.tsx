@@ -121,7 +121,10 @@ const Digits = (props: DigitsProps) => {
           <Button
             style={{ marginTop: 64 }}
             disabled={disableButton}
-            onPress={() => onPress(value)}
+            onPress={() => {
+              onPress(value);
+              setTimeout(() => setValue(Dinero({ amount: 0 })), 1000);
+            }}
             type="Primary"
             label="Generate pay code"
           />
