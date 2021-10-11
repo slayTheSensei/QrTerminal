@@ -31,7 +31,7 @@ const PayCode = (props: PayCodeProps) => {
   const codeValue = `https://demo.vinylpay.com/?amount=${value}&venue=Demo-Greens`;
 
   React.useEffect(() => {
-    const formatedAmount = amount.toFormat('0,0.00');
+    const formatedAmount = amount.toFormat('$0,0.00');
 
     setValue(formatedAmount);
   }, [amount]);
@@ -55,16 +55,18 @@ const PayCode = (props: PayCodeProps) => {
         }
         title=""
       />
+
+      <Text style={styles.label}>Order Total</Text>
+      <Text style={styles.balance}>{value}</Text>
+
       <View style={styles.container}>
-        <Text style={styles.label}>Order Total</Text>
-        <Text style={styles.balance}>{value}</Text>
         <TouchableOpacity
           onPress={() =>
             navigation.navigate('Completed', { payment: MOCK_PAYMENT })
           }>
           <QRCode
             value={codeValue}
-            size={270}
+            size={250}
             backgroundColor="transparent"
             enableLinearGradient
             linearGradient={COLORS.vinylGradient}
@@ -88,18 +90,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.skyGrey,
   },
   container: {
-    justifyContent: 'flex-start',
+    marginTop: 96,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 64,
+    flex: 1,
   },
   label: {
     fontFamily: FONTS.avenirLight,
     fontSize: 12,
+    marginTop: 48,
   },
   balance: {
     fontFamily: FONTS.avenirBlack,
     fontSize: 42,
-    marginBottom: 48,
     color: COLORS.vinylBlack,
   },
   msgContainer: {
@@ -108,8 +111,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   msg: {
-    marginTop: 96,
-    fontSize: 30,
+    marginTop: 24,
+    fontSize: 24,
     fontFamily: FONTS.avenirBlack,
     color: COLORS.vinylBlack,
   },
