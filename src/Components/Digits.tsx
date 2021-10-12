@@ -40,7 +40,7 @@ const Digits = (props: DigitsProps) => {
       {/* TODO: Add Header */}
       <View style={styles.container}>
         <Text style={styles.titleText}>Enter Payment Amount</Text>
-        <Text style={styles.balanceText}>{value.toFormat('$0,0.00')}</Text>
+        <Text style={styles.balanceText}>{value.toFormat('$0,0')}</Text>
         <View>
           <View style={{ alignSelf: 'center', paddingTop: 30 }}>
             <View style={[styles.numPadRow]}>

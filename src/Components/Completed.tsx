@@ -7,6 +7,7 @@ import { Maybe } from 'monet';
 import * as React from 'react';
 import { Text, View, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { RootStackParamList } from '../../App';
+import Icon from '../Assets/Icon';
 import { COLORS } from '../Core/Colors';
 import { FONTS } from '../Core/Fonts';
 import Header from '../Core/Header';
@@ -38,7 +39,10 @@ const Completed = (props: CompletedProps) => {
     Maybe.Nothing() as Maybe<Payment>,
   );
 
+  const [customer] = React.useState('');
   const navigation = useNavigation() as NavigationProp<any>;
+
+  const isPaid = payment.status === PaymentStatus.AUTHORIZED;
 
   React.useEffect(() => {
     setPayment(Maybe.Just(payment));
@@ -47,6 +51,16 @@ const Completed = (props: CompletedProps) => {
   const formatedAmount = Dinero({
     amount: pendingPayment.map(p => p.amount).getOrElse(0),
   }).toFormat('$0,0.00');
+
+  const completedContent = (
+    <>
+      <Icon type="Completed" style={{ width: 127, height: 127 }} />
+      <Text style={styles.title}>Payment Completed</Text>
+      <Text style={styles.text}>{`${
+        customer || 'Desmond Pearson'
+      } has has completed the payment`}</Text>
+    </>
+  );
 
   return (
     <>
@@ -68,12 +82,18 @@ const Completed = (props: CompletedProps) => {
         title=""
       />
       <View style={styles.container}>
-        <ActivityIndicator color={COLORS.vinylBlue} size="large" />
-        <Text style={styles.title}>Payment Processing</Text>
-        <Text
-          style={
-            styles.text
-          }>{`Waiting to the customer to complete the ${formatedAmount} payment.`}</Text>
+        {isPaid ? (
+          completedContent
+        ) : (
+          <>
+            <ActivityIndicator color={COLORS.vinylBlue} size="large" />
+            <Text style={styles.title}>Payment Processing</Text>
+            <Text
+              style={
+                styles.text
+              }>{`Waiting to the customer to complete the ${formatedAmount} payment.`}</Text>
+          </>
+        )}
       </View>
     </>
   );
@@ -87,7 +107,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     backgroundColor: COLORS.skyGrey,
-    marginBottom: 100,
+    paddingBottom: 100,
   },
   text: {
     marginTop: 12,

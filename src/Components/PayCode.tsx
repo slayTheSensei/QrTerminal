@@ -16,7 +16,7 @@ const MOCK_PAYMENT = {
   amount: 7500,
   userId: 'a',
   merchantId: 'b',
-  status: 1,
+  status: 2,
 };
 
 interface PayCodeProps {
