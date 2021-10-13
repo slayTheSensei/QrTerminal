@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { COLORS } from './Colors';
 import { FONTS } from './Fonts';
 import { dimentions } from './Metrics';
@@ -13,7 +14,7 @@ import { dimentions } from './Metrics';
 interface ButtonProps {
   label: string;
   onPress: () => void;
-  type: 'Primary' | 'Secondary';
+  type: 'Primary' | 'Secondary' | 'Black';
   color?: 'Green' | 'Default';
   disabled?: boolean;
   style?: ViewStyle;
@@ -31,11 +32,19 @@ export const Button = (props: ButtonProps) => {
   switch (type) {
     case 'Primary':
       return (
-        <TouchableOpacity
-          style={[props.style, styles.primary, backgroundColor, disabledColor]}
-          disabled={disabled}
-          onPress={onPress}>
-          <Text style={[styles.text, disabledText]}>{label}</Text>
+        <TouchableOpacity style={{}} disabled={disabled} onPress={onPress}>
+          {!disabled && (
+            <LinearGradient
+              colors={[COLORS.vinylBlue, COLORS.vinylPurple]}
+              style={[
+                props.style,
+                styles.primary,
+                backgroundColor,
+                disabledColor,
+              ]}>
+              <Text style={[styles.text, disabledText]}>{label}</Text>
+            </LinearGradient>
+          )}
         </TouchableOpacity>
       );
 
@@ -48,6 +57,16 @@ export const Button = (props: ButtonProps) => {
           <View style={styles.container}>
             <Text style={styles.text}>{label}</Text>
           </View>
+        </TouchableOpacity>
+      );
+
+    case 'Black':
+      return (
+        <TouchableOpacity
+          style={[props.style, styles.primary, backgroundColor, disabledColor]}
+          disabled={disabled}
+          onPress={onPress}>
+          <Text style={[styles.text, disabledText]}>{label}</Text>
         </TouchableOpacity>
       );
 
@@ -70,7 +89,7 @@ const styles = StyleSheet.create({
   text: {
     color: COLORS.skyGrey,
     fontSize: 18,
-    fontFamily: FONTS.avenirMedium,
+    fontFamily: FONTS.avenirBlack,
   },
   primary: {
     flexDirection: 'row',

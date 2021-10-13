@@ -4,7 +4,7 @@ import Icon from '../Assets/Icon';
 import { COLORS } from './Colors';
 
 interface HeaderProps {
-  onClose: () => void;
+  onClose?: () => void;
   title: string;
   price?: string;
 }
@@ -14,9 +14,11 @@ const Header = (props: HeaderProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.back}>
-        <TouchableOpacity onPress={onClose}>
-          <Icon type="Close" />
-        </TouchableOpacity>
+        {onClose && (
+          <TouchableOpacity onPress={onClose}>
+            <Icon type="Close" />
+          </TouchableOpacity>
+        )}
       </View>
       <View style={styles.title}>
         <Text style={styles.titleText}>{title}</Text>

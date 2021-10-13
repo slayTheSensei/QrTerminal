@@ -125,8 +125,8 @@ const Digits = (props: DigitsProps) => {
               onPress(value);
               setTimeout(() => setValue(Dinero({ amount: 0 })), 1000);
             }}
-            type="Primary"
-            label="Generate pay code"
+            type="Black"
+            label="Generate Pay Code"
           />
         </View>
       </View>
