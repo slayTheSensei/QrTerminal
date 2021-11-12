@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
+import { isTablet } from 'react-native-device-info';
 import LinearGradient from 'react-native-linear-gradient';
 import { COLORS } from './Colors';
 import { FONTS } from './Fonts';
@@ -19,6 +20,8 @@ interface ButtonProps {
   disabled?: boolean;
   style?: ViewStyle;
 }
+
+const BUTTON_HEIGHT = isTablet() ? 70 : 60;
 
 export const Button = (props: ButtonProps) => {
   const { label, onPress, type, color = 'Default', disabled } = props;
@@ -95,7 +98,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: COLORS.vinylGrey,
     width: dimentions.fullWidth - 48,
-    height: 60,
+    height: BUTTON_HEIGHT,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,

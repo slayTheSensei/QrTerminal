@@ -18,6 +18,9 @@ export interface Payment {
   userId: Maybe<string>;
   merchantId: string;
   status: PaymentStatus;
+  merchantWalletId: string;
+  authorizationCode: string;
+  createdAt: string;
 }
 export interface FirestorePayment {
   id: string;
@@ -25,11 +28,15 @@ export interface FirestorePayment {
   userId: string;
   merchantId: string;
   status: PaymentStatus;
+  merchantWalletId: string;
+  authorizationCode: string;
+  createdAt: string;
 }
 
 export const buildFirestorePayent = (
   amount: number,
   merchantId: string,
+  walletId: string,
   userId: string = '',
   status: PaymentStatus = PaymentStatus.UNCONFIRMED,
 ): FirestorePayment => {
@@ -39,6 +46,9 @@ export const buildFirestorePayent = (
     userId,
     merchantId,
     status,
+    merchantWalletId: walletId,
+    authorizationCode: '',
+    createdAt: '',
   };
   return payment;
 };
@@ -46,6 +56,7 @@ export const buildFirestorePayent = (
 export const buildPayent = (
   amount: number,
   merchantId: string,
+  merchantWalletId: string,
   userId: Maybe<string> = Maybe.Nothing(),
   status: PaymentStatus = PaymentStatus.UNCONFIRMED,
 ): Payment => {
@@ -55,6 +66,9 @@ export const buildPayent = (
     userId,
     merchantId,
     status,
+    merchantWalletId,
+    authorizationCode: '',
+    createdAt: '',
   };
   return payment;
 };
@@ -64,11 +78,10 @@ export function onResult(
   onChanges: (payment: Payment) => void,
 ) {
   if (!documentSnapshot.exists) {
+    // TODO Navigate back home
     return;
   }
   const data = documentSnapshot.data() as any;
-
-  console.log('onResult', data);
 
   if (data.status === PaymentStatus.UNCONFIRMED) {
     return;
@@ -77,6 +90,7 @@ export function onResult(
   const newPayment: Payment = buildPayent(
     data.amount,
     data.merchantId,
+    data.merchantWalletId,
     Maybe.Just(data.userId),
     data.status,
   );
@@ -101,9 +115,21 @@ export function setPaymentListener(
       onError,
     );
 }
+
 export const addPayment = async (payment: FirestorePayment) => {
   return await firestore()
     .collection('payments')
     .doc(payment.id)
     .set({ ...payment });
+};
+
+export const deletePayment = async (paymentId: string) => {
+  console.log('DeletingPayment', paymentId);
+  await firestore()
+    .collection('payments')
+    .doc(paymentId)
+    .delete()
+    .then(() => {
+      console.log('Payment deleted!');
+    });
 };

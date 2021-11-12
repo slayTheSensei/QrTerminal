@@ -6,14 +6,7 @@ import {
   useNavigation,
 } from '@react-navigation/core';
 import * as React from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  Alert,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, StyleSheet, Text, Alert, ActivityIndicator } from 'react-native';
 import { Maybe } from 'monet';
 import QRCode from 'react-native-qrcode-svg';
 import { MerchantContext, RootStackParamList } from '../../../App';
@@ -25,21 +18,19 @@ import Dinero from 'dinero.js';
 import {
   addPayment,
   buildFirestorePayent,
+  deletePayment,
   Payment,
   PaymentStatus,
   setPaymentListener,
 } from './helper';
 import Button from '../../Core/Button';
+import { toDinero } from '../../Modules/Dinero';
+import { getUser } from '../../Firebase/firebase';
+import { User } from '../../Modules/Firebase';
+import { capitalizeFirstLetter } from '../../Modules/StringHelpers';
+import { isTablet } from 'react-native-device-info';
 
 const { Just, Nothing } = Maybe;
-
-const MOCK_PAYMENT = {
-  id: '1',
-  amount: 7500,
-  userId: 'a',
-  merchantId: 'b',
-  status: 2,
-};
 
 interface PayCodeProps {
   route: RouteProp<RootStackParamList, 'PayCode'>;
@@ -47,11 +38,13 @@ interface PayCodeProps {
 
 const PayCode = (props: PayCodeProps) => {
   const { amount } = props.route.params;
+  const QR_SIZE = isTablet() ? 400 : 250;
 
   // STATE
-  const [value, setValue] = React.useState('');
+  const [value, setValue] = React.useState<Dinero.Dinero>();
   const navigation = useNavigation() as NavigationProp<any>;
-  const [customer] = React.useState('');
+  const [customer, setCustomer] = React.useState<User>();
+  const [paymentId, setPaymentId] = React.useState('');
   const [pendingPayment, setPayment] = React.useState(
     Nothing() as Maybe<Payment>,
   );
@@ -60,17 +53,31 @@ const PayCode = (props: PayCodeProps) => {
   // LIFECYCLE
   React.useEffect(() => {
     const fetchPayment = async () => {
-      const formatedValue = amount.toFormat('$0,0.00');
-      setValue(formatedValue);
+      setValue(amount);
 
       if (merchant) {
         const payment = await buildFirestorePayent(
           amount.toUnit(),
           merchant.id,
+          merchant.walletId,
         );
 
+        setPaymentId(payment.id);
+
         await addPayment(payment).then(async () => {
-          return await setPaymentListener(payment, p => setPayment(Just(p)));
+          return await setPaymentListener(payment, async p => {
+            setPayment(Just(p));
+
+            console.log('Payment', p);
+
+            const userId = p.userId.getOrElse('');
+
+            const user = await getUser(userId);
+
+            if (user) {
+              setCustomer(user);
+            }
+          });
         });
       }
     };
@@ -84,16 +91,21 @@ const PayCode = (props: PayCodeProps) => {
   const isPaid = pay?.status === PaymentStatus.AUTHORIZED;
   const isConfirmed = pay?.status === PaymentStatus.PENDING;
 
-  const codeValue = `https://demo.vinylpay.com/?amount=${value}&venue=Demo-Greens`;
+  const formatedValue = value?.toFormat('0.00');
 
-  const formatedAmount = Dinero({
-    amount: pendingPayment.map(p => p.amount).getOrElse(0),
-  }).toFormat('$0,0.00');
+  const codeValue = `https://app.vinylpay.com/?amount=${formatedValue}&venue=${merchant?.name}&id=${paymentId}`;
+
+  const formatedAmount = pendingPayment
+    .map(payment => {
+      return toDinero(payment.amount) || Dinero({ amount: 0 });
+    })
+    .getOrElse(Dinero({ amount: 0 }))
+    .toFormat('$0,0.00');
 
   // SCREENS
   const ScanScreen = () => {
     return (
-      <View style={styles.root}>
+      <View style={[styles.root]}>
         <Header
           onClose={() =>
             Alert.alert(
@@ -105,31 +117,34 @@ const PayCode = (props: PayCodeProps) => {
                   onPress: () => console.log('Cancel Pressed'),
                   style: 'cancel',
                 },
-                { text: 'OK', onPress: () => navigation.goBack() },
+                {
+                  text: 'OK',
+                  onPress: async () => {
+                    await deletePayment(paymentId);
+                    navigation.navigate('Home');
+                  },
+                },
               ],
             )
           }
           title=""
         />
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={styles.label}>Order Total</Text>
+          <Text style={styles.balance}>{value?.toFormat('$0,0.00')}</Text>
 
-        <Text style={styles.label}>Order Total</Text>
-        <Text style={styles.balance}>{value}</Text>
-
-        <View style={[styles.container, { paddingTop: 64 }]}>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('Completed', { payment: MOCK_PAYMENT })
-            }>
+          <View style={styles.container}>
             <QRCode
               value={codeValue}
-              size={250}
+              size={QR_SIZE}
               backgroundColor="transparent"
               enableLinearGradient
               linearGradient={COLORS.vinylGradient}
             />
-          </TouchableOpacity>
-          <View style={styles.msgContainer}>
-            <Text style={styles.msg}>{'Scan to pay'}</Text>
+            <View style={styles.msgContainer}>
+              <Text style={styles.msg}>{'Scan the code'}</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -150,7 +165,13 @@ const PayCode = (props: PayCodeProps) => {
                   onPress: () => console.log('Cancel Pressed'),
                   style: 'cancel',
                 },
-                { text: 'OK', onPress: () => navigation.navigate('Home') },
+                {
+                  text: 'OK',
+                  onPress: async () => {
+                    await deletePayment(paymentId);
+                    navigation.navigate('Home');
+                  },
+                },
               ],
             )
           }
@@ -178,13 +199,19 @@ const PayCode = (props: PayCodeProps) => {
           <>
             <Icon type="Completed" style={{ width: 127, height: 127 }} />
             <Text style={styles.title}>Payment Completed</Text>
-            <Text style={styles.text}>{`${
-              customer || 'Desmond Pearson'
-            } has has completed the payment`}</Text>
+            <Text style={styles.text}>{`${capitalizeFirstLetter(
+              customer?.firstName || 'The customer',
+            )} has completed the payment`}</Text>
           </>
         </View>
-        <View style={{ alignItems: 'center', paddingBottom: 48 }}>
+        <View
+          style={{
+            alignItems: 'center',
+            paddingBottom: 48,
+            backgroundColor: COLORS.skyGrey,
+          }}>
           <Button
+            style={{ maxWidth: 500 }}
             onPress={() => {
               navigation.navigate('Home');
             }}
@@ -223,7 +250,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    paddingBottom: 100,
   },
   label: {
     fontFamily: FONTS.avenirLight,
@@ -236,7 +262,6 @@ const styles = StyleSheet.create({
     color: COLORS.vinylBlack,
   },
   msgContainer: {
-    flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -246,8 +271,8 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.avenirBlack,
   },
   msg: {
-    marginTop: 24,
-    fontSize: 24,
+    marginTop: 100,
+    fontSize: 36,
     fontFamily: FONTS.avenirBlack,
     color: COLORS.vinylBlack,
   },

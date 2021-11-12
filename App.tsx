@@ -7,7 +7,6 @@ import Icon from './src/Assets/Icon';
 import { COLORS } from './src/Core/Colors';
 import Home from './src/Components/home';
 import PayCode from './src/Components/PayCode';
-import { Dinero } from './src/Modules/Dinero';
 import { Payment } from './src/Components/PayCode/helper';
 import firestore from '@react-native-firebase/firestore';
 import { Maybe } from 'monet';
@@ -26,6 +25,7 @@ interface Merchant {
   id: string;
   email: string;
   name: string;
+  walletId: string;
 }
 
 export const MerchantContext = createContext(
@@ -40,7 +40,7 @@ const App = () => {
       .doc('rDDJa9JfEk0NjlW1kmDc') // TODO: Get this from the logged in user
       .get()
       .then(documentSnapshot => {
-        console.log('merchnt exists: ', documentSnapshot.exists);
+        console.log('merchant exists: ', documentSnapshot.exists);
 
         if (documentSnapshot.exists) {
           const data = documentSnapshot.data() as any;
@@ -49,6 +49,7 @@ const App = () => {
             id: data.id,
             name: data.name,
             email: data.email,
+            walletId: data.walletId,
           } as Merchant;
 
           console.log('Merchant data: ', firestoreMerchant);

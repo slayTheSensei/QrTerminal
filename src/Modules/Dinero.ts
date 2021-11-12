@@ -1,5 +1,12 @@
-import Dinero from 'dinero.js'
+import Dinero from 'dinero.js';
 
-export type Money = Dinero.Dinero
+export type Money = Dinero.Dinero;
 
-export { Dinero };
+export function toDinero(rawAmount: number) {
+  const splitString = rawAmount.toString().split('.');
+
+  if (splitString.length === 1) {
+    const amount = parseInt(splitString + '00', 10);
+    return Dinero({ amount });
+  }
+}
