@@ -1,6 +1,4 @@
 /* eslint-disable react-native/no-inline-styles */
-import Dinero from 'dinero.js';
-import { append } from 'ramda';
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { isTablet } from 'react-native-device-info';
@@ -9,35 +7,56 @@ import Button from '../Core/Button';
 import { COLORS } from '../Core/Colors';
 import { FONTS } from '../Core/Fonts';
 import { dimentions } from '../Core/Metrics';
-import { Money } from '../Modules/Dinero';
+import { Money, toDinero } from '../Modules/Dinero';
 
 const BUTTON_WIDTH = isTablet() ? 80 : 60;
 const TEXT_SIZE = isTablet() ? 36 : 24;
+const BUTTON_MARGIN = isTablet() ? 30 : 15;
 
 interface DigitsProps {
   onPress: (value: Money) => void;
-  disableButton: boolean;
 }
 
 const Digits = (props: DigitsProps) => {
-  const { onPress, disableButton } = props;
-  const [value, setValue] = useState(Dinero({ amount: 0 }));
+  const { onPress } = props;
+  const [value, setValue] = useState('0');
 
-  const addValue = (amount: number) => {
-    const currentValue = value.isZero() ? [] : [value.toUnit()];
-    const newValue = Number(append(amount, currentValue).join('')) * 100;
+  const disableButton = !parseInt(value, 10);
 
-    setValue(Dinero({ amount: newValue }));
-  };
+  const addValue = (val: string) => {
+    if (val === '.' && value === '0') {
+      return setValue('0' + val);
+    }
 
-  const removeValue = () => {
-    if (value.isZero()) {
+    if (value.includes('.') && value.split('.')[1].length === 2) {
       return;
     }
 
-    const currentValue = value.toUnit().toString();
-    const newValue = Number(currentValue.slice(0, -1)) * 100;
-    setValue(Dinero({ amount: newValue }));
+    if (value === '0') {
+      return setValue(val);
+    }
+    const newValue = value + val;
+
+    setValue(newValue);
+  };
+
+  const removeValue = () => {
+    let newValue;
+    if (value[value.length - 1] === '.') {
+      if (value.length === 2) {
+        return setValue('0');
+      } else {
+        newValue = value.slice(0, -2);
+      }
+    } else {
+      newValue = value.substring(0, value.length - 1);
+    }
+
+    if (value.length === 1) {
+      return setValue('0');
+    }
+
+    return setValue(newValue);
   };
 
   return (
@@ -45,7 +64,9 @@ const Digits = (props: DigitsProps) => {
       {/* TODO: Add Header */}
       <View style={styles.container}>
         <Text style={styles.titleText}>Enter Payment Amount</Text>
-        <Text style={styles.balanceText}>{value.toFormat('$0,0')}</Text>
+        <Text style={styles.balanceText}>
+          {toDinero(parseFloat(value)).toFormat('$0.00')}
+        </Text>
         <View
           style={{
             flex: 1,
@@ -64,56 +85,58 @@ const Digits = (props: DigitsProps) => {
               <View style={[styles.numPadRow]}>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(1)}>
+                  onPress={() => addValue('1')}>
                   <Text style={styles.text}>1</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(2)}>
+                  onPress={() => addValue('2')}>
                   <Text style={styles.text}>2</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(3)}>
+                  onPress={() => addValue('3')}>
                   <Text style={styles.text}>3</Text>
                 </TouchableOpacity>
               </View>
               <View style={[styles.numPadRow]}>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(4)}>
+                  onPress={() => addValue('4')}>
                   <Text style={styles.text}>4</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(5)}>
+                  onPress={() => addValue('5')}>
                   <Text style={styles.text}>5</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(6)}>
+                  onPress={() => addValue('6')}>
                   <Text style={styles.text}>6</Text>
                 </TouchableOpacity>
               </View>
               <View style={[styles.numPadRow]}>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(7)}>
+                  onPress={() => addValue('7')}>
                   <Text style={styles.text}>7</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(8)}>
+                  onPress={() => addValue('8')}>
                   <Text style={styles.text}>8</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(9)}>
+                  onPress={() => addValue('9')}>
                   <Text style={styles.text}>9</Text>
                 </TouchableOpacity>
               </View>
               <View style={[styles.numPadRow]}>
                 <TouchableOpacity
+                  disabled={value.includes('.')}
+                  onPress={() => addValue('.')}
                   style={[
                     styles.digitContainer,
                     { backgroundColor: 'transparent' },
@@ -122,7 +145,7 @@ const Digits = (props: DigitsProps) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.digitContainer}
-                  onPress={() => addValue(0)}>
+                  onPress={() => addValue('0')}>
                   <Text style={styles.text}>{0}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -130,7 +153,7 @@ const Digits = (props: DigitsProps) => {
                     styles.digitContainer,
                     { backgroundColor: 'transparent' },
                   ]}
-                  disabled={value.isZero()}
+                  disabled={!value}
                   onPress={removeValue}>
                   <Icon type="Back" style={{ height: 28, width: 15 }} />
                 </TouchableOpacity>
@@ -141,8 +164,8 @@ const Digits = (props: DigitsProps) => {
             style={{ maxWidth: 500 }}
             disabled={disableButton}
             onPress={() => {
-              onPress(value);
-              setTimeout(() => setValue(Dinero({ amount: 0 })), 1000);
+              onPress(toDinero(parseFloat(value)));
+              setTimeout(() => setValue('0'), 1000);
             }}
             type="Black"
             label="Generate Pay Code"
@@ -183,7 +206,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 100,
-    marginHorizontal: 15,
+    marginHorizontal: BUTTON_MARGIN,
     backgroundColor: COLORS.vinylBlack,
   },
   titleText: {

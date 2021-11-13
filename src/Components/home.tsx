@@ -14,10 +14,7 @@ const Home = (props: HomeProps) => {
 
   return (
     <View style={styles.container}>
-      <Digits
-        onPress={amount => navigation.navigate('PayCode', { amount })}
-        disableButton={false}
-      />
+      <Digits onPress={amount => navigation.navigate('PayCode', { amount })} />
     </View>
   );
 };
